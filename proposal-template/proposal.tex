@@ -28,8 +28,8 @@
 % ----- Fill in your metadata -------------------------------
 \renewcommand{\thgaKurs}{Databases}
 \renewcommand{\thgaDatum}{Summer Term 2026}
-\newcommand{\authorName}{<<< Your name >>>}
-\newcommand{\projectTitle}{<<< Working title of your application >>>}
+\newcommand{\authorName}{Amen allah Dabbech}
+\newcommand{\projectTitle}{Blood Donation Management System}
 
 \begin{document}
 \thispagestyle{empty}
@@ -54,8 +54,24 @@ includegraphics} and keep the caption.
 \section{Application domain and motivation}
 % ============================================================
 
-<<< Which application do you build and which problem does it solve? Who uses
-it, and for what? Add one or two concrete usage scenarios. >>>
+Blood donation services need to continuously keep track of donors, their
+donation history, and the capacity of individual donation centers. Without
+digital support, it is difficult to verify whether a donor has respected the
+mandatory minimum interval between two donations (e.g.\ 56 days), and centers
+lack an easy overview of donor numbers and blood type distribution.
+
+The system targets two user groups: \textbf{staff at donation centers}, who
+register new donations and keep track of donors, and \textbf{administrative
+staff}, who review statistics per center (e.g.\ number of donations, blood
+type distribution).
+
+\textbf{Scenario 1:} A donor arrives at a center to donate blood. Staff check
+the system to see when the donor's last donation took place. If it was less
+than 56 days ago, the new donation is rejected.
+
+\textbf{Scenario 2:} An administrator wants to know how many donations a
+specific center recorded last month and which blood type was most common
+among them.
 
 % ============================================================
 \section{Data model -- ER sketch}
