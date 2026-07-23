@@ -80,45 +80,54 @@ among them.
 \begin{figure}[ht]
   \centering
   % Replace the placeholder with: \includegraphics[width=0.85\linewidth]{er-sketch.jpg}
-  \placeholder{0.85\linewidth}{4.5cm}{[ placeholder ]\\ your ER sketch goes here\\ (a photographed hand drawing is fine)}
-  \caption{ER sketch of the <<< domain >>> data model: entity types, key
+  \includegraphics[width=0.85\linewidth]{er-sketch.jpeg}
+  \caption{ER sketch of the blood donation data model: entity types, key
   attributes, relationships and cardinalities (at least one N:M).}
   \label{fig:er}
 \end{figure}
 
-Figure~\ref{fig:er} shows <<< explain your ER model here: name the central
-entity types, the key attributes and the relationships, and point out the N:M
-relationship and its cardinalities. >>>
+Figure~\ref{fig:er} shows the ER model of the blood donation domain. The
+central entity types are \textbf{Donor}, \textbf{Center}, and
+\textbf{Donation}. Donor and Center are connected through the N:M
+relationship \emph{Donation}, since one donor can donate at multiple centers
+and one center serves multiple donors. Each Donation record carries its own
+attributes (date, amount in ml) and links exactly one donor to exactly one
+center, resulting in the cardinalities N:1 between Donation and Donor, and
+N:1 between Donation and Center.
 
 % ============================================================
 \section{From model to schema}
 % ============================================================
 
-<<< Derive the relational schema. For each table give the columns, the primary
-key (underlined) and the foreign keys. >>>
-
 \begin{itemize}
-  \item \texttt{<<<table>>>}(\underline{id}, <<<column>>>, \dots)
-  \item \texttt{<<<table>>>}(\underline{id}, \emph{<<<foreign\_key>>>}, \dots)
+  \item \texttt{donor(\underline{id}, name, birth\_date, blood\_type)}
+  \item \texttt{center(\underline{id}, name, address)}
+  \item \texttt{donation(\underline{id}, donor\_id, center\_id, date, amount\_ml)}
 \end{itemize}
 
-\textbf{Normalisation.} <<< One or two sentences: why is the schema free of
-redundancy (at least 3NF)? >>>
+\textbf{Foreign keys:} \texttt{donation.donor\_id} $\rightarrow$ \texttt{donor.id};
+\texttt{donation.center\_id} $\rightarrow$ \texttt{center.id}.
+
+\textbf{Normalisation.} Each table has a single-column primary key and every
+non-key attribute depends only on that key. There are no transitive
+dependencies: for instance, the center's name and address are not repeated in
+the \texttt{donation} table, but referenced only via \texttt{center\_id}.
+Therefore the schema is in third normal form (3NF).
 
 % ============================================================
 \section{API design}
 % ============================================================
-
-<<< List the planned FastAPI endpoints. Mark where a JOIN / an aggregation
-sits, and which endpoints require the X-API-Key. >>>
 
 \renewcommand{\arraystretch}{1.2}
 \begin{tabularx}{\linewidth}{@{}p{2cm}p{4cm}X@{}}
 \toprule
 \textbf{Method} & \textbf{Path} & \textbf{Purpose} \\
 \midrule
-\texttt{GET}  & \texttt{/<<<…>>>} & <<< reads … (JOIN / aggregation) >>> \\
-\texttt{POST} & \texttt{/<<<…>>>} & <<< creates … (requires X-API-Key) >>> \\
+\texttt{GET}  & \texttt{/donors} & lists all donors \\
+\texttt{GET}  & \texttt{/donors/\{id\}/donations} & donor's donation history (JOIN) \\
+\texttt{GET}  & \texttt{/centers/\{id\}/stats} & donation count and total volume per center (aggregation) \\
+\texttt{POST} & \texttt{/donors} & creates a new donor (requires X-API-Key) \\
+\texttt{POST} & \texttt{/donations} & creates a new donation; rejected if the 56-day minimum interval is violated (requires X-API-Key) \\
 \bottomrule
 \end{tabularx}
 
@@ -126,103 +135,116 @@ sits, and which endpoints require the X-API-Key. >>>
 \section{Frontend prototype (hand sketches)}
 % ============================================================
 
-<<< Describe what the frontend looks like and which endpoints it operates, and
-document a prototypical frontend with hand-drawn sketches -- one per screen/form.
-Python/tkinter is recommended; if you use something else, say what and why. The
-frontend is delivered as a .deb installer and asks for the API URL and X-API-Key
-in a connection dialog at startup. >>>
-
-% The four boxes below are placeholders. Replace each \placeholder{...} with
-% \includegraphics[width=\linewidth]{your-sketch.jpg} and keep the \captionof.
+The frontend is implemented in Python using \texttt{tkinter}. It consists of
+four screens: a connection dialog that collects the API URL and X-API-Key at
+startup, a main screen listing all donors (calling \texttt{GET /donors}), a
+detail form to register a new donation (calling \texttt{POST /donations}),
+and a statistics screen showing the number of donations and total volume per
+center (calling \texttt{GET /centers/\{id\}/stats}).
+% The four sketches below show the four screens.
 \begin{figure}[ht]
 \centering
 \begin{minipage}[t]{0.47\linewidth}\centering
-  \placeholder{\linewidth}{3.5cm}{[ placeholder ]\\ connection dialog}
+  \includegraphics[width=\linewidth]{fe-connect.jpg}
   \captionof{figure}{Startup connection dialog: API URL + X-API-Key.}
   \label{fig:fe-connect}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.47\linewidth}\centering
-  \placeholder{\linewidth}{3.5cm}{[ placeholder ]\\ main / list screen}
-  \captionof{figure}{Main screen: <<< list/table, calls \texttt{GET /<<<…>>>} >>>.}
+  \includegraphics[width=\linewidth]{fe-main.jpg}
+  \captionof{figure}{Main screen: list of all donors, calls \texttt{GET /donors}.}
   \label{fig:fe-main}
 \end{minipage}
-
 \vspace{1em}
-
 \begin{minipage}[t]{0.47\linewidth}\centering
-  \placeholder{\linewidth}{3.5cm}{[ placeholder ]\\ detail / form screen}
-  \captionof{figure}{Detail form: <<< create/edit, calls \texttt{POST /<<<…>>>} >>>.}
+  \includegraphics[width=\linewidth]{fe-detail.jpg}
+  \captionof{figure}{Detail form: register a new donation, calls \texttt{POST /donations}.}
   \label{fig:fe-detail}
 \end{minipage}\hfill
 \begin{minipage}[t]{0.47\linewidth}\centering
-  \placeholder{\linewidth}{3.5cm}{[ placeholder ]\\ second feature screen}
-  \captionof{figure}{<<< Second feature screen and the endpoint it calls >>>.}
+  \includegraphics[width=\linewidth]{fe-second.jpg}
+  \captionof{figure}{Center statistics screen, calls \texttt{GET /centers/\{id\}/stats}.}
   \label{fig:fe-second}
 \end{minipage}
 \end{figure}
-
 Figures~\ref{fig:fe-connect}--\ref{fig:fe-second} show the four screens of the
-prototype. Figure~\ref{fig:fe-connect} shows <<< the connection dialog that
-collects the API URL and X-API-Key at startup >>>; Figure~\ref{fig:fe-main}
-shows <<< the main screen and the endpoint it reads from >>>;
-Figure~\ref{fig:fe-detail} shows <<< the form used to create/edit a record and
-the write endpoint it calls >>>; and Figure~\ref{fig:fe-second} shows <<< the
-remaining screen >>>.
+prototype. Figure~\ref{fig:fe-connect} shows the connection dialog that
+collects the API URL and X-API-Key at startup; Figure~\ref{fig:fe-main}
+shows the main screen listing all donors, read via \texttt{GET /donors};
+Figure~\ref{fig:fe-detail} shows the form used to register a new donation,
+calling \texttt{POST /donations}; and Figure~\ref{fig:fe-second} shows the
+center statistics screen, calling \texttt{GET /centers/\{id\}/stats}.
 
 % ============================================================
 \section{Operation with Docker Compose}
 % ============================================================
 
-<<< Which services run in your docker-compose.yml (at least postgres and api)?
-Where do the credentials live (.env)? How is the backend deployed on the
-lecture server? >>>
+The system runs via Docker Compose with two services: \texttt{postgres} (the
+database) and \texttt{api} (the FastAPI backend). The \texttt{postgres}
+service persists data in a named volume, so donor and donation records
+survive container restarts. Database credentials and the X-API-Key are
+stored in a \texttt{.env} file, which is not committed to version control and
+is only read at container startup via \texttt{env\_file} in
+\texttt{docker-compose.yml}. On the lecture server, the backend is deployed
+by pulling the repository, placing the \texttt{.env} file, and running
+\texttt{docker compose up -d}; the API is then reachable over HTTP on the
+configured port, and the frontend connects to it using the API URL and
+X-API-Key entered in the startup dialog.
+
 
 % ============================================================
 \section{Scope, milestones and risks}
 % ============================================================
 
-\textbf{Scope.} <<< How many tables and endpoints? >>>
+\textbf{Scope.} The system consists of 3 tables (\texttt{donor},
+\texttt{center}, \texttt{donation}) and 5 API endpoints (3 GET, 2 POST).
 
-\textbf{Milestones and schedule.} <<< Fill in the week and the estimated hours;
-the hours should add up to roughly 40. >>>
+\textbf{Milestones and schedule.}
 
+\begin{center}
 \renewcommand{\arraystretch}{1.2}
-\begin{tabularx}{\linewidth}{@{}p{1.4cm}Xp{1.8cm}@{}}
+\begin{tabularx}{0.95\linewidth}{@{}p{1.2cm}p{8cm}p{1.8cm}@{}}
 \toprule
 \textbf{Week} & \textbf{Milestone} & \textbf{Est. hours} \\
 \midrule
-<<<1>>>   & <<< e.g. schema + seed data ready >>>                        & <<<8>>> \\
-<<<2--3>>> & <<< e.g. API reading/writing, protected by X-API-Key >>>   & <<<12>>> \\
-<<<4--5>>> & <<< e.g. frontend operates the core endpoints, .deb >>>    & <<<10>>> \\
-<<<6>>>   & <<< e.g. tests + documentation + video >>>                  & <<<10>>> \\
+1 & Schema design and seed data ready & 8 \\
+2--3 & API reading/writing implemented, protected by X-API-Key & 12 \\
+4--5 & Frontend (tkinter) operates the core endpoints, packaged as .deb & 10 \\
+6 & Tests, documentation, and video & 10 \\
 \bottomrule
 \end{tabularx}
+\end{center}
 
-\textbf{Risks.} <<< One or two risks that could make the project fail. >>>
-
+\textbf{Risks.} The main risk is that the minimum-interval constraint between
+two donations is not enforced correctly, allowing invalid donations to be
+recorded. A second risk is that the .deb packaging of the tkinter frontend
+takes longer than planned, reducing time available for testing.
 % ============================================================
 \section{Acceptance criteria and testing}
 % ============================================================
 
-<<< State when your system counts as ``done and correct'', and how you prove it.
-Formulate each criterion as a checkable statement, then name the test that backs
-it. Turn the risk above into at least one concrete test case. >>>
+This section states when the system counts as done and correct, and how each
+claim is verified. Each criterion is formulated as a checkable statement,
+backed by a concrete test; the risk from Section~7 is covered by a dedicated
+test case for the minimum-interval rule.
 
-\textbf{Acceptance criteria.} <<< Checkable statements about the finished system. >>>
+\textbf{Acceptance criteria.}
 \begin{itemize}[topsep=2pt]
-  \item <<< e.g. A record that violates a constraint is rejected (API returns 4xx). >>>
-  \item <<< e.g. GET /<<<…>>> returns the correct aggregated value (JOIN + aggregation). >>>
-  \item <<< e.g. Write endpoints without a valid X-API-Key are refused (401/403). >>>
+  \item A donation that violates the 56-day minimum interval is rejected (API returns 4xx).
+  \item \texttt{GET /centers/\{id\}/stats} returns the correct donation count and total volume (JOIN + aggregation).
+  \item Write endpoints (\texttt{POST /donors}, \texttt{POST /donations}) without a valid X-API-Key are refused (401/403).
 \end{itemize}
 
-\textbf{Test plan.} <<< What you test and with which tools. A short list is enough. >>>
+\textbf{Test plan.}
 \begin{itemize}[topsep=2pt]
-  \item \textbf{Database:} <<< which constraints (PK/FK/UNIQUE/NOT NULL) you verify. >>>
-  \item \textbf{API:} <<< endpoint tests, happy path + error cases, e.g. with
-        \texttt{pytest} and FastAPI's \texttt{TestClient} against a test database (L 08). >>>
-  \item \textbf{Business rule:} <<< the test that covers the risk named above. >>>
+  \item \textbf{Database:} verify PK uniqueness on all tables, FK constraints
+        between \texttt{donation} and \texttt{donor}/\texttt{center}, and
+        NOT NULL constraints on required fields such as \texttt{date} and \texttt{amount\_ml}.
+  \item \textbf{API:} endpoint tests covering happy path and error cases (invalid
+        donor/center id, missing fields) using \texttt{pytest} and FastAPI's
+        \texttt{TestClient} against a test database (L 08).
+  \item \textbf{Business rule:} a test that inserts a donation less than 56 days
+        after a donor's previous donation and asserts the API rejects it.
 \end{itemize}
-
 \vspace{1em}
 \begin{infobox}
 \textbf{Effort budget:} the whole term project (system, documentation and video)
