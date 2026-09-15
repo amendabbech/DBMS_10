@@ -1,61 +1,103 @@
-# DBMS_10 – Project Proposal for the Term Project
+# Blutspende-Verwaltungssystem
 
-**Module:** Introduction to Database Management Systems · THGA Bochum
-**Lecturer:** Stephan Bökelmann · <sboekelmann@ep1.rub.de>
-**Prerequisites:** Lectures 01–10, exercises DBMS_01–DBMS_09
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.141-009688.svg)
+![Python](https://img.shields.io/badge/Python-3.12+-yellow.svg)
+![Debian Package](https://img.shields.io/badge/Package-Debian%20.deb-D70A53.svg)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)
 
-This exercise is **structured differently** from the previous ones: you do not
-write code, you **design** your own database-backed system and submit a
-**project proposal** to the lecturer. The proposal is the basis of your **term
-project** (graded deliverable), in which you build a complete system over up to
-two months (≈ 40 h of real work, including documentation and video).
+A database-backed **blood donation management system** built for the Term
+Project of *Introduction to Database Management Systems* (THGA Bochum).
 
-**Architecture** — everything on the lecture server:
+It manages donors (**Spender**), donation centers (**Spendezentren**) and
+donations (**Spenden**), and enforces the mandatory **56-day waiting period**
+between two donations directly at the database level via a PostgreSQL
+trigger.
 
-```
-Frontend (installed .deb)  --HTTP + X-API-Key-->  FastAPI  -->  PostgreSQL
-                                     backend orchestrated by Docker Compose
-```
+---
 
-- **Backend** (PostgreSQL + FastAPI) runs in containers via Docker Compose.
-- **Frontend** is built as a Debian installer (`.deb`) and installed next to it.
-- Write endpoints are protected with an `X-API-Key`.
+## Documentation
 
-The term project is submitted as three parts: the **running system**, a
-**documentation** (a GitHub repo with LaTeX CI + Makefile), and an **8–10 min
-video** (`.mpg` to Moodle *or* an unlisted YouTube link).
+| Document | Format | Description |
+|---|---|---|
+| **Documentation** | [Separate repository](https://github.com/amendabbech/DBMS_10-documentation) | ER model, relational schema, API design, deployment |
+| **Proposal** | [`out/proposal.pdf`](out) (build with `make`) | Original project proposal |
+
+---
+
+## System architecture
+
+             ┌───────────────────────────────┐
+             │      db-frontend (tkinter)     │
+             │  Spender / Zentrum / Spende    │
+             └──────────────┬─────────────────┘
+                            │ HTTP / JSON
+                            │ Header: X-API-Key
+                            ▼
+             ┌───────────────────────────────┐
+             │     FastAPI backend (Uvicorn)  │
+             └──────────────┬─────────────────┘
+                            │ psycopg2
+                            ▼
+
+┌───────────────────────────────────────────────────────────┐
+│ PostgreSQL 16 (Docker) │
+│ │
+│ ┌────────────┐ ┌──────────┐ ┌────────────────┐ │
+│ │ spender │──────│ spende │──────│ spendezentrum │ │
+│ └────────────┘ └──────────┘ └────────────────┘ │
+│ ▲ │
+│ trigger: 56-day minimum interval │
+└───────────────────────────────────────────────────────────┘
+
+
+## Core features
+
+- **56-day donation rule enforced in the database**, via a PostgreSQL
+  trigger (`trg_spendeabstand`) — not just in application code, so the
+  constraint holds regardless of which client writes data.
+- **Relational schema in 3NF**: `spender`, `spendezentrum`, `spende`
+  (N:M between donors and centers, resolved through donations).
+- **REST API** (FastAPI) with public `GET` endpoints and `X-API-Key`
+  protected `POST` endpoints.
+- **Desktop GUI** (tkinter) with a connection dialog and tabs for Spender,
+  Spendezentrum and Spende — packaged as a native `.deb`.
+- **Containerized backend** via Docker Compose.
 
 ## Repository layout
 
-```
-src/dbms_10.tex             # the exercise / assignment
-proposal-template/          # fill-in skeleton students copy for the proposal
-  proposal.tex
-example-documentation/      # worked example of the final documentation
-  documentation.tex
-style/thga-db.sty           # THGA corporate design (copied from the course repo)
-.github/workflows/build.yml # LaTeX build + release — copy this into your own repo
-Makefile                    # builds all three PDFs into out/
-out/                        # generated PDFs (not committed)
-```
+system/
+db/backend.sql or schema.sql # PostgreSQL schema + trigger
+backend/ # FastAPI application
+frontend/db-frontend/ # tkinter GUI, uv-managed, packaged as .deb
+docker-compose.yml
 
-The `proposal-template/` and `example-documentation/` folders are meant to be
-**copied**: start your proposal from the template, and model your documentation
-repository on the example — together with the `Makefile` and
-`.github/workflows/build.yml`, which build the PDF and publish it as a GitHub
-Release on every tag push.
 
-## Build
+## Running the system
 
-Requirement: `latexmk` and TeX Live (`apt install latexmk texlive-full`).
-
+**1. Start the database**
 ```bash
-make          # builds out/dbms_10.pdf, out/proposal.pdf, out/documentation.pdf
-make clean    # remove auxiliary files, keep PDFs
-make distclean# remove everything including out/
+docker-compose up -d
 ```
 
-## Releases
+**2. Start the backend**
+```bash
+cd system/backend
+source venv/bin/activate
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
 
-Pushing a tag matching `v*` triggers the GitHub Actions workflow, which builds
-all three PDFs and attaches them to a GitHub Release automatically.
+**3. Install and launch the frontend**
+```bash
+cd system/frontend/db-frontend
+sudo dpkg -i db-frontend_0.1.0_amd64.deb
+db-frontend
+```
+
+In the connection dialog, enter the API URL (`http://localhost:8000`) and
+the `X-API-Key`.
+
+## Links
+
+- Documentation repository: <https://github.com/amendabbech/DBMS_10-documentation>
+- Author: Amen Allah  Dabbech
