@@ -65,5 +65,6 @@ Note: this key is hardcoded for demo/grading purposes. In a real deployment, it 
 
 ## Links
 
+- Video walkthrough: https://www.youtube.com/watch?v=ZdpA3hDtjVw
 - Documentation repository: https://github.com/amendabbech/DBMS_10-documentation
 - Author: Amen Allah Dabbech
