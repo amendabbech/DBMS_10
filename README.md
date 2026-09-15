@@ -21,7 +21,7 @@ trigger.
 | Document | Format | Description |
 |---|---|---|
 | **Documentation** | [Separate repository](https://github.com/amendabbech/DBMS_10-documentation) | ER model, relational schema, API design, deployment |
-| **Proposal** | [`out/proposal.pdf`](out) (build with `make`) | Original project proposal |
+| **Proposal** | `out/proposal.pdf` (run `make` locally to build) | Original project proposal |
 
 ---
 
@@ -67,7 +67,7 @@ trigger.
 ## Repository layout
 
 system/
-db/backend.sql or schema.sql # PostgreSQL schema + trigger
+db/schema.sql                  # PostgreSQL schema + trigger
 backend/ # FastAPI application
 frontend/db-frontend/ # tkinter GUI, uv-managed, packaged as .deb
 docker-compose.yml
@@ -76,6 +76,8 @@ docker-compose.yml
 ## Running the system
 
 **1. Start the database**
+
+
 ```bash
 docker-compose up -d
 ```
