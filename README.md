@@ -59,7 +59,9 @@ It manages donors (Spender), donation centers (Spendezentren) and donations (Spe
        sudo dpkg -i db-frontend_0.1.0_amd64.deb
        db-frontend
 
-In the connection dialog, enter the API URL (http://localhost:8000) and the X-API-Key.
+In the connection dialog, enter the API URL (http://localhost:8000) and the X-API-Key (default: geheimschluessel123, see system/backend/main.py).
+
+Note: this key is hardcoded for demo/grading purposes. In a real deployment, it should be set via an environment variable instead of being committed to source control.
 
 ## Links
 
